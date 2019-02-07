@@ -1,0 +1,76 @@
+Installing Nginx..................
+
+Install Nginx server with lates Nginx Image : ---------------------------
+
+	#Create a folder /somepath/nginx and navigate to it
+	cd /somepath/nginx
+
+	#Copy staic file to /somepath/nginx folder
+	cp static_file .
+
+    #Execute below on local Terminal :
+	nano Dockerfile
+
+	#Paste below content in Dockerfile:
+
+			FROM nginx
+			COPY . /usr/share/nginx/html
+
+			RUN apt-get update \
+		    	&& apt-get install nano
+
+   #Execute below on local terminal:
+
+   docker build -t cc-nginx .
+   docker run --name cc-nginx -d -p 8080:80 cc-nginx
+
+   docker exec -it cc-nginx /bin/bash
+
+   #Last command will take you inside docker container
+   #Inside docker containe navigate to /etc/nginx/ folder
+   
+   cd /etc/nginx/
+   nano nginx.conf
+
+   # Paste below content in the nginx.conf inside http {} block
+   # http block should look like below
+
+				   http {
+				    include       /etc/nginx/mime.types;
+				    default_type  application/octet-stream;
+
+				    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+				                      '$status $body_bytes_sent "$http_referer" '
+				                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+				    access_log  /var/log/nginx/access.log  main;
+
+				    sendfile        on;
+				    #tcp_nopush     on;
+
+				    keepalive_timeout  65;
+
+				    #gzip  on;
+
+				    include /etc/nginx/conf.d/*.conf;
+
+				   server {
+				        root /usr/share/nginx/html/;
+				        index index.html;
+				        listen 80 default_server;
+				        listen [::]:80 default_server;
+				    }
+				}
+	# execute below to exit from docker container
+	exit
+
+	# Reload the docker container  : Container ID can be fetched from "docker ps" command
+	docker restart <container id> 
+
+	#Hit below url
+    http://localhost:8080/static_file
+
+
+
+
+
